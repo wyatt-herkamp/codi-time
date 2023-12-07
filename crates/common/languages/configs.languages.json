@@ -1,0 +1,42 @@
+[
+    {
+        "name": "JSON",
+        "aliases": [],
+        "categories": [
+            "NotALanguage"
+        ],
+        "extensions": [
+            ".json"
+        ]
+    },
+    {
+        "name": "TOML",
+        "aliases": [],
+        "categories": [
+            "NotALanguage"
+        ],
+        "extensions": [
+            ".toml"
+        ]
+    },
+    {
+        "name": "gitignore",
+        "aliases": [],
+        "categories": [
+            "NotALanguage"
+        ],
+        "extensions": [
+            ".gitignore"
+        ]
+    },
+    {
+        "name": ".env",
+        "aliases": [],
+        "categories": [
+            "NotALanguage"
+        ],
+        "extensions": [
+            ".env"
+        ]
+    }
+]

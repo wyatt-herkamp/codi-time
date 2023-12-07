@@ -1,0 +1,70 @@
+[
+    {
+        "name": "Rust",
+        "aliases": [
+            "rust-lang"
+        ],
+        "extensions": [
+            ".rs"
+        ],
+        "default_color": "#dea584"
+    },
+    {
+        "name": "Java",
+        "aliases": [],
+        "categories": [
+            "java"
+        ],
+        "default_color": "#B07219",
+        "extensions": [
+            ".java"
+        ]
+    },
+    {
+        "name": "Kotlin",
+        "aliases": [],
+        "categories": [
+            "java"
+        ],
+        "default_color": "#F18E33",
+        "extensions": [
+            ".kt",
+            ".kts"
+        ]
+    },
+    {
+        "name": "C#",
+        "aliases": [
+            "csharp"
+        ],
+        "default_color": "#178600",
+        "extensions": [
+            ".cs"
+        ]
+    },
+    {
+        "name": "Markdown",
+        "aliases": [
+            "md",
+            "mkdown",
+            "mkd"
+        ],
+        "categories": [
+            "NotALanguage"
+        ],
+        "extensions": [
+            ".md",
+            ".markdown",
+            ".mdown",
+            ".mkdn",
+            ".mkd",
+            ".mdwn",
+            ".mdtxt",
+            ".mdtext"
+        ],
+        "file_names": [
+            "README"
+        ],
+        "default_color": "#ffffff"
+    }
+]

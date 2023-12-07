@@ -1,0 +1,18 @@
+[
+    {
+        "name": "web",
+        "description": "Related to front-end development, web design, and web development."
+    },
+    {
+        "name": "BuildTools",
+        "description": "Related to build tools like Maven, Gradle, Cargo, and so on."
+    },
+    {
+        "name": "java",
+        "description": "Related to Java programming language."
+    },
+    {
+        "name": "NotALanguage",
+        "description": "Not a programming language. Like Configs Files and so on."
+    }
+]

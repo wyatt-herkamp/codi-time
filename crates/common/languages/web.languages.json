@@ -1,0 +1,104 @@
+[
+    {
+        "name": "Vue",
+        "aliases": [
+            "vuejs"
+        ],
+        "categories": [
+            "web"
+        ],
+        "extensions": [
+            ".vue"
+        ],
+        "default_color": "#41b883"
+    },
+    {
+        "name": "HTML",
+        "categories": [
+            "web"
+        ],
+        "extensions": [
+            ".html"
+        ]
+    },
+    {
+        "name": "JavaScript",
+        "aliases": [
+            "ECMAScript"
+        ],
+        "categories": [
+            "web"
+        ],
+        "extensions": [
+            ".js"
+        ]
+    },
+    {
+        "name": "TypeScript",
+        "related_languages": [
+            "JavaScript"
+        ],
+        "aliases": [],
+        "categories": [
+            "web"
+        ],
+        "extensions": [
+            ".ts",
+            ".d.ts"
+        ]
+    },
+    {
+        "name": "CSS",
+        "aliases": [],
+        "categories": [
+            "web"
+        ],
+        "extensions": [
+            ".css"
+        ]
+    },
+    {
+        "name": "SASS",
+        "related_languages": [
+            "CSS"
+        ],
+        "aliases": [
+            "SCSS"
+        ],
+        "categories": [
+            "web"
+        ],
+        "extensions": [
+            ".scss",
+            ".sass"
+        ]
+    },
+    {
+        "name": "JSX",
+        "related_languages": [
+            "JavaScript",
+            "HTML"
+        ],
+        "aliases": [],
+        "categories": [
+            "web"
+        ],
+        "extensions": [
+            ".jsx"
+        ]
+    },
+    {
+        "name": "TSX",
+        "related_languages": [
+            "TypeScript",
+            "HTML"
+        ],
+        "aliases": [],
+        "categories": [
+            "web"
+        ],
+        "extensions": [
+            ".tsx"
+        ]
+    }
+]

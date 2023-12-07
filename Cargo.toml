@@ -1,0 +1,143 @@
+[workspace]
+members = [
+    "crates/common",
+    "crates/helper_macros",
+    "crates/entities",
+    "crates/migration",
+    "cli",
+]
+resolver = "2"
+
+
+[workspace.package]
+version = "0.0.1"
+license = "Apache-2.0"
+authors = ["Wyatt Jacob Herkamp <wherkamp@gmail.com>"]
+repository = "https://github.com/wyatt-herkamp/wak-rs"
+edition = "2021"
+
+[workspace.dependencies]
+tokio = { version = "1", features = ["full"] }
+actix-web = { version = "4.4" }
+clap = { version = "4.4", features = ["derive"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+chrono = { version = "0.4", features = ["serde"] }
+
+rust-embed = { version = "8.0.0", features = ["interpolate-folder-path"] }
+rand = "0.8"
+sea-orm = { version = "0.12", features = [
+    "macros",
+    "sqlx-postgres",
+    "postgres-array",
+    "with-chrono",
+] }
+sqlx = "0.7"
+strum = { version = "0.25", features = ["derive"] }
+derive_more = { version = "1.0.0-beta.6", features = [
+    "display",
+    "from",
+    "into",
+    "try_from",
+    "try_into",
+    "deref",
+    "deref_mut",
+] }
+mime = { git = "https://github.com/hyperium/mime.git", features = ["serde1"] }
+http = "0.2.9"
+bytes = "1"
+digestible = { version = "0.2", features = ["base64"] }
+utoipa = { git = "https://github.com/wyatt-herkamp/utoipa.git", features = [
+    "chrono",
+    "actix_extras",
+] }
+typeshare = "1"
+thiserror = "1"
+ahash = "0.8"
+
+[package]
+name = "codi-time"
+version.workspace = true
+edition.workspace = true
+repository.workspace = true
+authors.workspace = true
+license.workspace = true
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+common = { path = "./crates/common" }
+tokio = { workspace = true }
+tzdb = { version = "0.5.7" }
+actix-web = { workspace = true, features = ["rustls-0_21"] }
+actix-service = "2"
+actix-files = "0.6"
+actix-cors = "0.6"
+anyhow = "1"
+actix-multipart = { version = "0.6", features = ["actix-multipart-derive"] }
+mime = "0.3.17"
+rustls = "0.21"
+rustls-pemfile = "1"
+handlebars = "5.0.0-beta.5"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+toml = "0.8"
+# Database
+entities = { path = "./crates/entities" }
+migration = { path = "./crates/migration" }
+sea-orm = { workspace = true, features = ["runtime-actix-rustls"] }
+sqlx = { workspace = true }
+uuid = { version = "1", features = ["serde", "v4"] }
+chrono = { version = "0.4", features = ["serde"] }
+argon2 = "0.5.0"
+futures-util = "0.3"
+futures = "0.3"
+auto_impl = "1.0.1"
+
+# Utils
+sha2 = { version = "0.10" }
+either = { version = "1.8", features = ["serde"] }
+base64 = "0.21"
+parking_lot = { version = "0.12" }
+rand = { version = "0.8.5", features = ["std_rng"] }
+serde_with = { version = "3" }
+async-trait = "0.1"
+ahash.workspace = true
+utoipa = { workspace = true, features = ["actix_extras"] }
+utoipa-swagger-ui = { git = "https://github.com/wyatt-herkamp/utoipa.git", features = [
+    "actix-web",
+] }
+clap = { workspace = true }
+redb = { version = "1" }
+simdutf8 = { version = "0.1.4" }
+bytes = "1.4.0"
+# Macro Laziness
+strum = { version = "0.25", features = ["derive"] }
+derive_more.workspace = true
+thiserror = "1"
+this_actix_error = { git = "https://github.com/wyatt-herkamp/this_actix_errors.git" }
+config_types = { git = "https://github.com/wyatt-herkamp/config_types.git", features = [
+    "strum",
+    "digestible",
+] }
+digestible = { workspace = true }
+# Log
+tracing-actix-web = "0.7"
+tracing = "0.1"
+typeshare = { workspace = true }
+# Tracing subscriber - Composing Tracing subscribers
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+
+# OpenTelemetry - Tracing framework
+opentelemetry = { version = "0.21", features = [] }
+opentelemetry-otlp = { version = "0.14", default-features = true, features = [
+    "http-proto",
+    "reqwest-client",
+] }
+opentelemetry_sdk = { version = "0.21", features = ["rt-tokio"] }
+
+# Tracing OpenTelemetry - Tracing subscriber for OpenTelemetry
+tracing-opentelemetry = "0.22"
+reqwest = { version = "0.11", features = ["json"] }
+[build-dependencies]
+vergen = { version = "8.0.0" }

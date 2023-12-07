@@ -1,0 +1,24 @@
+[package]
+name = "common"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+sea-orm = { workspace = true, optional = true }
+actix-web = { workspace = true, optional = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+mime = { workspace = true }
+http = { workspace = true }
+bytes = { workspace = true }
+thiserror = { workspace = true }
+ahash.workspace = true
+rust-embed = { workspace = true }
+chrono = { workspace = true }
+strum = { workspace = true }
+auto_impl = "1.1.0"
+digestible = { workspace = true }
+utoipa = { workspace = true, features = [] }
+typeshare = { workspace = true }

@@ -1,0 +1,52 @@
+[
+    {
+        "name": "Cargo",
+        "related_languages": [
+            "Rust",
+            "TOML"
+        ],
+        "categories": [
+            "BuildTools",
+            "NotALanguage"
+        ],
+        "file_names": [
+            "Cargo.toml",
+            "Cargo.lock"
+        ]
+    },
+    {
+        "name": "NPM",
+        "categories": [
+            "web",
+            "BuildTools",
+            "NotALanguage"
+        ],
+        "related_languages": [
+            "JavaScript",
+            "TypeScript",
+            "JSON"
+        ],
+        "aliases": [
+            "PNPM",
+            "Yarn"
+        ],
+        "file_names": [
+            "package.json",
+            "package-lock.json"
+        ]
+    },
+    {
+        "name": "Gradle",
+        "categories": [
+            "java",
+            "BuildTools",
+            "NotALanguage"
+        ],
+        "file_names": [
+            "build.gradle",
+            "build.gradle.kts",
+            "settings.gradle",
+            "settings.gradle.kts"
+        ]
+    }
+]
