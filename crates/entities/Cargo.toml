@@ -22,3 +22,4 @@ strum.workspace = true
 derive_more.workspace = true
 utoipa = { workspace = true, features = [] }
 sea_orm_exports = { git = "https://github.com/wyatt-herkamp/sea_orm_exports.git" }
+tracing.workspace = true

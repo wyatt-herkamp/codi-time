@@ -43,6 +43,8 @@ derive_more = { version = "1.0.0-beta.6", features = [
     "deref",
     "deref_mut",
 ] }
+tracing = "0.1"
+
 mime = { git = "https://github.com/hyperium/mime.git", features = ["serde1"] }
 http = "0.2.9"
 bytes = "1"
@@ -123,7 +125,7 @@ config_types = { git = "https://github.com/wyatt-herkamp/config_types.git", feat
 digestible = { workspace = true }
 # Log
 tracing-actix-web = "0.7"
-tracing = "0.1"
+tracing.workspace = true
 typeshare = { workspace = true }
 # Tracing subscriber - Composing Tracing subscribers
 tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }

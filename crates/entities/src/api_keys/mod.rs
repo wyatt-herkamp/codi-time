@@ -1,5 +1,6 @@
-use common::user_types::key_permissions::APIKeyPermissions;
-use sea_orm::{entity::prelude::*, JsonValue};
+use common::{APITokenPermissions, user_types::api_token::FromCLI};
+use sea_orm::entity::prelude::*;
+pub mod utils;
 use sea_orm_exports::SeaORMExports;
 
 #[derive(Clone, Debug, PartialEq, Eq, DeriveEntityModel, SeaORMExports)]
@@ -12,7 +13,8 @@ pub struct Model {
     pub user_id: i64,
     /// API Key
     pub token: String,
-    pub permissions: Vec<APIKeyPermissions>,
+    pub permissions: Vec<APITokenPermissions>,
+    pub from_cli: Option<FromCLI>,
     /// Key is invalid. Invalid keys are kept for a short period for warning and logging purposes.
     pub revoked: Option<DateTimeWithTimeZone>,
     #[sea_orm(default_expr = "Expr::current_timestamp()")]

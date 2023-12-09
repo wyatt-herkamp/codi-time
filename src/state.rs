@@ -14,6 +14,8 @@ pub struct State {
     #[schema(value_type = bool)]
     pub is_first_user: AtomicBool,
     pub public_registration: bool,
+    /// URL to the home page
+    pub home_url: Option<String>,
     pub recaptcha_config: Option<PublicRecaptcha>,
     #[digestible(digest_with = digest_with_hash)]
     pub started_at: DateTime<Utc>,
@@ -26,6 +28,7 @@ impl Default for State {
             public_registration: true,
             started_at: Utc::now(),
             recaptcha_config: None,
+            home_url: None,
         }
     }
 }

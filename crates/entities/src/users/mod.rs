@@ -5,7 +5,7 @@ use common::user_types::{
     bio::Bio, group::Group, preferences::Preferences, report_intervals::ReportIntervals, Email,
     Username,
 };
-use sea_orm::{entity::prelude::*, ActiveValue};
+use sea_orm::entity::prelude::*;
 use sea_orm_exports::SeaORMExports;
 use serde::Serialize;
 use strum::EnumIter;

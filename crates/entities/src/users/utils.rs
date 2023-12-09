@@ -26,7 +26,22 @@ pub async fn does_username_exist(
         .await?;
     Ok(user > 0)
 }
-
+pub async fn does_user_exist(
+    username: String,
+    connection: &impl ConnectionTrait,
+) -> Result<bool, DbErr> {
+    let user = UserEntity::find()
+        .filter(
+            UserColumn::Banned.eq(false).and(
+                UserColumn::Username
+                    .eq(username.clone())
+                    .or(UserColumn::Email.eq(username)),
+            ),
+        )
+        .count(connection)
+        .await?;
+    Ok(user > 0)
+}
 pub async fn does_username_or_email_exist(
     username: Username,
     email: Email,

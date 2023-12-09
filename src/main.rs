@@ -20,6 +20,7 @@ use recaptcha::RecaptchaAccess;
 use rustls::{Certificate, PrivateKey, ServerConfig as RustlsServerConfig};
 use rustls_pemfile::{certs, pkcs8_private_keys};
 use sea_orm::{ConnectOptions, SqlxPostgresConnector};
+pub mod cli_access;
 use state::State;
 use tracing_actix_web::TracingLogger;
 use user::{
@@ -42,6 +43,7 @@ async fn main() -> std::io::Result<()> {
     let args: Args = Args::parse();
     let ServerConfig {
         bind_address,
+        home_url,
         workers,
         tls,
         database,
@@ -94,6 +96,7 @@ async fn main() -> std::io::Result<()> {
 
     let state = Data::new(State {
         is_first_user: AtomicBool::new(!first_user),
+        home_url,
         public_registration,
         recaptcha_config: recaptcha_access.state_value(),
         ..Default::default()
@@ -106,6 +109,7 @@ async fn main() -> std::io::Result<()> {
     })?;
     let database = Data::new(database);
     let session = Data::new(session);
+    let cli_access = Data::new(cli_access::CLIAccess::new());
     let openapi = Data::new(ApiDoc::openapi());
 
     let server = HttpServer::new(move || {
@@ -119,7 +123,9 @@ async fn main() -> std::io::Result<()> {
             .app_data(database.clone())
             .app_data(session.clone())
             .app_data(state.clone())
+            .app_data(recaptcha_access.clone())
             .app_data(openapi.clone())
+            .app_data(cli_access.clone())
             .wrap(TracingLogger::default())
             .wrap(cors)
             .service(openapi_json)

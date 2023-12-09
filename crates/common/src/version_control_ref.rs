@@ -35,4 +35,6 @@ pub enum PRStatus {
 pub struct PullRequest {
     pub id: u64,
     pub status: PRStatus,
+    pub from_branch: String,
+    pub to_branch: String,
 }

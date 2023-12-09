@@ -2,9 +2,8 @@ pub mod tracing;
 
 use std::path::PathBuf;
 
-use actix_web::web::Data;
 use chrono::Duration;
-use config_types::{chrono_types::duration::ConfigDuration, size_config::ConfigSize};
+use config_types::chrono_types::duration::ConfigDuration;
 use digestible::Digestible;
 use sea_orm::ConnectOptions;
 use serde::{Deserialize, Serialize};
@@ -15,6 +14,7 @@ use crate::recaptcha::GoogleRecaptcha;
 #[serde(default)]
 pub struct ServerConfig {
     pub bind_address: String,
+    pub home_url: Option<String>,
     pub workers: Option<usize>,
     pub tls: Option<TlsConfig>,
     pub database: Database,
@@ -34,6 +34,7 @@ impl Default for ServerConfig {
     fn default() -> Self {
         Self {
             bind_address: "0.0.0.0:5312".to_string(),
+            home_url: None,
             workers: None,
             tls: None,
             database: Database::default(),

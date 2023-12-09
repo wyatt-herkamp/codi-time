@@ -1,7 +1,7 @@
 use std::str::FromStr;
+pub mod api_token;
 pub mod bio;
 pub mod group;
-pub mod key_permissions;
 pub mod preferences;
 pub mod public_user;
 pub mod report_intervals;

@@ -1,12 +1,12 @@
+pub mod cli;
 pub mod middleware;
 pub mod routes;
 pub mod session;
 pub mod update_routes;
-
 use std::{fmt::Debug, fs::Permissions};
 
 use actix_web::{dev::Payload, web::Data, FromRequest, HttpMessage, HttpRequest};
-use common::User;
+use common::{APIToken, User};
 use digestible::Digestible;
 use entities::{api_keys::APIKeyModel, users::UserType};
 use futures_util::{
@@ -15,6 +15,7 @@ use futures_util::{
 };
 use sea_orm::DatabaseConnection;
 use serde::Serialize;
+use serde_with::As;
 use strum::EnumIs;
 use tracing::{instrument, Span};
 use utoipa::ToSchema;
@@ -43,7 +44,7 @@ pub enum AuthenticationRaw {
 #[derive(Debug, Clone, EnumIs)]
 pub enum Authentication {
     Session { user: User, session: Session },
-    APIToken { user: User, token: APIKeyModel },
+    APIToken { user: User, token: APIToken },
 }
 impl Into<User> for Authentication {
     fn into(self) -> User {
@@ -62,30 +63,24 @@ impl AsRef<User> for Authentication {
     }
 }
 impl Authentication {
+    #[instrument(skip(database, raw))]
     pub async fn new(
         database: Data<DatabaseConnection>,
         raw: AuthenticationRaw,
     ) -> Result<Option<Authentication>, WebsiteError> {
         let result = match raw {
             AuthenticationRaw::Session(session) => {
-                let user = User::get_by_id(database.as_ref(), session.user_id).await?;
-                if let Some(user) = user {
-                    Ok(Some(Authentication::Session { user, session }))
-                } else {
-                    Ok(None)
-                }
+                User::get_by_id(database.as_ref(), session.user_id)
+                    .await?
+                    .map(|user| Authentication::Session { user, session })
             }
             AuthenticationRaw::APIToken(token) => {
-                let token = todo!();
-                if let Some((token, user)) = token {
-                    Ok(Some(Authentication::APIToken { user, token }))
-                } else {
-                    Ok(None)
-                }
+                entities::api_keys::utils::get_user_and_token(&token, database.as_ref())
+                    .await?
+                    .map(|(token, user)| Authentication::APIToken { user, token })
             }
         };
-        Span::current().record("auth_result", &format!("{:?}", result.as_ref()));
-        result
+        Ok(result)
     }
     /// Copies the id from the UserModel.
     pub fn id(&self) -> i64 {
