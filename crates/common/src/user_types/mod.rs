@@ -161,6 +161,39 @@ macro_rules! new_user_type {
     };
 }
 new_user_type!(
+    Location,
+    "Invalid location: {0}",
+    InvalidLocation,
+    pub fn sanitize(value: &str) -> String {
+        value.trim().to_owned()
+    },
+    pub fn validate(value: &str) -> Result<(), InvalidLocation> {
+        tzdb::raw_tz_by_name(value)
+            .ok_or(InvalidLocation("Invalid Time Zone."))
+            .map(|_| ())
+    }
+);
+
+impl Default for Location {
+    fn default() -> Self {
+        Self("Etc/UTC".into())
+    }
+}
+
+impl<'s> ToSchema<'s> for Location {
+    fn schema() -> (&'s str, RefOr<Schema>) {
+        (
+            "Location",
+            ObjectBuilder::new()
+                .schema_type(utoipa::openapi::SchemaType::String)
+                .description(Some("A valid IANA Time Zone."))
+                .example(Some("America/New_York".into()))
+                .into(),
+        )
+    }
+}
+
+new_user_type!(
     Username,
     "Invalid username: {0}",
     InvalidUsername,
@@ -176,6 +209,11 @@ new_user_type!(
         if value.len() > 16 {
             return Err(InvalidUsername(
                 "Username must be at most 16 characters long.",
+            ));
+        }
+        if !value.chars().any(|c| !c.is_numeric()) {
+            return Err(InvalidUsername(
+                "Username must contain at least one non-numeric character.",
             ));
         }
         if value.chars().any(|c| !c.is_alphanumeric()) {
@@ -235,5 +273,16 @@ impl<'s> ToSchema<'s> for Email {
                 .example(Some("example@gmail.com".into()))
                 .into(),
         )
+    }
+}
+
+#[cfg(test)]
+pub mod tests {
+    #[test]
+    pub fn location_tests() {
+        use super::Location;
+        assert!(Location::new("America/New_York").is_ok());
+        assert!(Location::new("America/Not_A_Real_Time_Zone").is_err());
+        assert!(Location::new("Etc/UTC").is_ok());
     }
 }

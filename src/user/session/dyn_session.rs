@@ -16,9 +16,9 @@ pub enum SessionError {
     Infallible,
     #[error(
         r#"Redb Error: Must likely the database is locked or corrupted. 
-    These sessions are short lived. 
-    So just delete the database and restart the server. If this problem persists. Please report it. 
-    {0}
+        These sessions are short lived. 
+        So just delete the database and restart the server. If this problem persists. Please report it. 
+        {0}
     "#
     )]
     RedbError(anyhow::Error),
@@ -58,7 +58,7 @@ impl SessionManager for DynSessionManager {
             )),
         }
     }
-
+    #[inline]
     fn create_session_with_life(
         &self,
         user_id: i64,
@@ -73,7 +73,7 @@ impl SessionManager for DynSessionManager {
                 .map_err(|x| SessionError::RedbError(x)),
         }
     }
-
+    #[inline]
     fn get_session(&self, session_id: &str) -> Result<Option<Session>, SessionError> {
         match self {
             DynSessionManager::Memory(session) => session
@@ -84,7 +84,7 @@ impl SessionManager for DynSessionManager {
                 .map_err(|x| SessionError::RedbError(x)),
         }
     }
-
+    #[inline]
     fn delete_session(&self, session_id: &str) -> Result<Option<Session>, SessionError> {
         match self {
             DynSessionManager::Memory(session) => session
@@ -95,14 +95,14 @@ impl SessionManager for DynSessionManager {
                 .map_err(|x| SessionError::RedbError(x)),
         }
     }
-
+    #[inline]
     fn get_session_config(&self) -> Arc<SessionConfig> {
         match self {
             DynSessionManager::Memory(session) => session.get_session_config(),
             DynSessionManager::Redb(session) => session.get_session_config(),
         }
     }
-
+    #[inline]
     fn get_session_config_ref(&self) -> &SessionConfig {
         match self {
             DynSessionManager::Memory(session) => session.get_session_config_ref(),

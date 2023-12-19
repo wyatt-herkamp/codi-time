@@ -14,7 +14,7 @@ use utoipa::ToSchema;
 
 use crate::{
     error::WebsiteError,
-    user::Authentication,
+    user::{Authentication, SessionAuthentication},
     utils::{password, time_utils},
 };
 
@@ -40,9 +40,7 @@ pub struct UpdateCore {
     pub receive_email_notifications: Option<bool>,
     /// Whether or not to show on the leader board.
     pub show_on_leader_board: Option<bool>,
-    /// Null to remove location. Otherwise, the new location to update to.
-    #[serde(default, with = "::serde_with::rust::double_option")]
-    pub location: Option<Option<String>>,
+    pub location: Option<String>,
 }
 
 impl UpdateCore {
@@ -73,13 +71,10 @@ impl UpdateCore {
 )]
 #[put("/me/update/core")]
 pub async fn update_core(
-    auth: Authentication,
+    auth: SessionAuthentication,
     connection: Data<DatabaseConnection>,
     updates: web::Json<UpdateCore>,
 ) -> Result<HttpResponse, WebsiteError> {
-    if !auth.is_session() {
-        return Ok(HttpResponse::Forbidden().finish());
-    }
     if updates.is_empty() {
         return Ok(HttpResponse::BadRequest().body("No fields to update."));
     }
@@ -172,13 +167,10 @@ pub struct UpdatePassword {
 )]
 #[put("/me/update/password")]
 pub async fn update_password(
-    auth: Authentication,
+    auth: SessionAuthentication,
     connection: Data<DatabaseConnection>,
     updates: web::Json<UpdatePassword>,
 ) -> Result<HttpResponse, WebsiteError> {
-    if !auth.is_session() {
-        return Ok(HttpResponse::Forbidden().finish());
-    }
     let user: User = auth.into();
     let Some(password_in_db) = get_password(user.id, connection.as_ref()).await? else {
         error!(
@@ -249,28 +241,39 @@ pub struct UpdateBio {
     #[serde(default, with = "::serde_with::rust::double_option")]
     pub github: Option<Option<String>>,
 }
+fn empty_option_string_to_none(option: Option<String>) -> Option<String> {
+    if let Some(option) = option {
+        if option.is_empty() {
+            None
+        } else {
+            Some(option)
+        }
+    } else {
+        option
+    }
+}
 impl UpdateBio {
     pub fn apply_to_bio(self, bio_to_update: &mut Bio) {
         if let Some(pronouns) = self.pronouns {
             bio_to_update.pronouns = pronouns;
         }
         if let Some(location) = self.location {
-            bio_to_update.location = location;
+            bio_to_update.location = empty_option_string_to_none(location);
         }
         if let Some(bio) = self.bio {
-            bio_to_update.bio = bio;
+            bio_to_update.bio = empty_option_string_to_none(bio);
         }
         if let Some(birthday) = self.birthday {
             bio_to_update.birthday = birthday;
         }
         if let Some(website) = self.website {
-            bio_to_update.website = website;
+            bio_to_update.website = empty_option_string_to_none(website);
         }
         if let Some(discord) = self.discord {
-            bio_to_update.discord = discord;
+            bio_to_update.discord = empty_option_string_to_none(discord);
         }
         if let Some(github) = self.github {
-            bio_to_update.github = github;
+            bio_to_update.github = empty_option_string_to_none(github);
         }
     }
     pub fn is_empty(&self) -> bool {
@@ -299,13 +302,10 @@ impl UpdateBio {
 )]
 #[put("/me/update/bio")]
 pub async fn update_bio(
-    auth: Authentication,
+    auth: SessionAuthentication,
     connection: Data<DatabaseConnection>,
     updates: web::Json<UpdateBio>,
 ) -> Result<HttpResponse, WebsiteError> {
-    if !auth.is_session() {
-        return Ok(HttpResponse::Forbidden().finish());
-    }
     let mut user: User = auth.into();
     let updates = updates.into_inner();
     if updates.is_empty() {

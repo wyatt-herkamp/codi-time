@@ -2,7 +2,6 @@ use actix_web::ResponseError;
 use either::Either;
 use sea_orm::DbErr;
 use serde::{ser::SerializeStruct, Serialize};
-use simdutf8::basic::Utf8Error;
 use this_actix_error::ActixError;
 use thiserror::Error;
 
@@ -30,9 +29,6 @@ pub enum WebsiteError {
     #[error("Not Found")]
     #[status_code(NOT_FOUND)]
     NotFound,
-    #[error("Bad Request")]
-    #[status_code(BAD_REQUEST)]
-    UTF8ERROR(Utf8Error),
     #[error("Exceeds Maximum Length")]
     #[status_code(BAD_REQUEST)]
     ExceedsMaxLength,

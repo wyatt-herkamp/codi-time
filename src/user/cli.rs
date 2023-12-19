@@ -1,9 +1,5 @@
-use actix_web::{
-    cookie::CookieBuilder, get, http::StatusCode, post, web, web::Data, HttpRequest, HttpResponse,
-    Responder,
-};
-use common::{user_types::api_token::FromCLI, Email, Group, PublicUser, User, Username};
-use either::Either;
+use actix_web::{get, post, web, web::Data, HttpRequest, HttpResponse};
+use common::user_types::api_token::FromCLI;
 use serde::{Deserialize, Serialize};
 use tracing::warn;
 
@@ -102,11 +98,10 @@ pub async fn retrieve_result(
 
 #[post("/complete-access/{key}")]
 pub async fn complete_access(
-    path: web::Path<String>,
-    login: web::Json<Login>,
-    cli_access: Data<CLIAccess>,
-    request: HttpRequest,
+    _path: web::Path<String>,
+    _login: web::Json<Login>,
+    _cli_access: Data<CLIAccess>,
+    _request: HttpRequest,
 ) -> Result<HttpResponse, WebsiteError> {
-    
     todo!();
 }

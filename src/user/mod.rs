@@ -3,24 +3,24 @@ pub mod middleware;
 pub mod routes;
 pub mod session;
 pub mod update_routes;
-use std::{fmt::Debug, fs::Permissions};
+use std::fmt::Debug;
 
 use actix_web::{dev::Payload, web::Data, FromRequest, HttpMessage, HttpRequest};
 use common::{APIToken, User};
+use derive_more::{AsRef, From, Into};
 use digestible::Digestible;
-use entities::{api_keys::APIKeyModel, users::UserType};
-use futures_util::{
-    future::{ready, LocalBoxFuture, Ready},
-    ready,
-};
-use sea_orm::DatabaseConnection;
+use either::Either;
+use entities::users::UserType;
+use futures_util::future::{ready, LocalBoxFuture, Ready};
+use sea_orm::{DatabaseConnection, DbErr};
 use serde::Serialize;
-use serde_with::As;
 use strum::EnumIs;
-use tracing::{instrument, Span};
+use this_actix_error::ActixError;
+use thiserror::Error;
+use tracing::{instrument, warn};
 use utoipa::ToSchema;
 
-use crate::{error::WebsiteError, user::session::Session};
+use crate::{error::WebsiteError, user::session::Session, utils};
 
 #[derive(Serialize, Digestible, Debug, ToSchema)]
 pub struct LoginResponse {
@@ -28,7 +28,34 @@ pub struct LoginResponse {
     #[digestible(skip)]
     session: Option<Session>,
 }
-
+#[derive(Debug, Error, ActixError)]
+pub enum AuthenticationError {
+    #[status_code(UNAUTHORIZED)]
+    #[error("Unauthorized")]
+    NoAuthenticationProvided,
+    #[status_code(UNAUTHORIZED)]
+    #[error("Invalid API Key")]
+    InvalidAPIKey,
+    #[status_code(UNAUTHORIZED)]
+    #[error("Invalid Session")]
+    InvalidSession,
+    #[status_code(FORBIDDEN)]
+    #[error("Must be a session")]
+    MustBeSession,
+    #[error("Database Error")]
+    #[status_code(INTERNAL_SERVER_ERROR)]
+    DatabaseError(Either<DbErr, sqlx::Error>),
+}
+impl From<DbErr> for AuthenticationError {
+    fn from(error: DbErr) -> Self {
+        Self::DatabaseError(Either::Left(error))
+    }
+}
+impl From<sqlx::Error> for AuthenticationError {
+    fn from(error: sqlx::Error) -> Self {
+        Self::DatabaseError(Either::Right(error))
+    }
+}
 /// The raw authentication data.
 /// Pulled from the middleware.
 /// Will be converted to an [Authentication] type.
@@ -67,20 +94,23 @@ impl Authentication {
     pub async fn new(
         database: Data<DatabaseConnection>,
         raw: AuthenticationRaw,
-    ) -> Result<Option<Authentication>, WebsiteError> {
+    ) -> Result<Authentication, AuthenticationError> {
         let result = match raw {
             AuthenticationRaw::Session(session) => {
                 User::get_by_id(database.as_ref(), session.user_id)
                     .await?
                     .map(|user| Authentication::Session { user, session })
+                    .ok_or(AuthenticationError::InvalidSession)
             }
             AuthenticationRaw::APIToken(token) => {
-                entities::api_keys::utils::get_user_and_token(&token, database.as_ref())
+                let as_sha256 = utils::sha256::encode_to_string(&token);
+                entities::api_keys::get_user_and_token(&as_sha256, database.as_ref())
                     .await?
                     .map(|(token, user)| Authentication::APIToken { user, token })
+                    .ok_or(AuthenticationError::InvalidAPIKey)
             }
         };
-        Ok(result)
+        result
     }
     /// Copies the id from the UserModel.
     pub fn id(&self) -> i64 {
@@ -106,27 +136,67 @@ impl FromRequest for NoAuthenticationAllowed {
     }
 }
 impl FromRequest for Authentication {
-    type Error = WebsiteError;
+    type Error = AuthenticationError;
     type Future = LocalBoxFuture<'static, Result<Self, Self::Error>>;
 
     /// Extracts the authentication data from the request.
     #[instrument(skip(req))]
     fn from_request(req: &HttpRequest, _: &mut Payload) -> Self::Future {
-        let model = req.extensions_mut().get::<AuthenticationRaw>().cloned();
-        Span::current().record("auth", &format!("{:?}", model.as_ref()));
-        if let Some(model) = model {
-            let database = req
-                .app_data::<Data<DatabaseConnection>>()
-                .expect("Unable to get Database Ref")
-                .clone();
-            return Box::pin(async move {
-                let model = Authentication::new(database, model).await?;
-                if let Some(model) = model {
-                    return Ok(model);
-                }
-                Err(WebsiteError::Unauthorized)
-            });
-        }
-        Box::pin(async move { Err(WebsiteError::Unauthorized) })
+        let raw_auth = req.extensions_mut().get::<AuthenticationRaw>().cloned();
+        let Some(raw_auth) = raw_auth else {
+            return Box::pin(async move { Err(AuthenticationError::NoAuthenticationProvided) });
+        };
+        let database = req
+            .app_data::<Data<DatabaseConnection>>()
+            .expect("Unable to get Database Ref")
+            .clone();
+        return Box::pin(async move { Authentication::new(database, raw_auth).await });
+    }
+}
+#[derive(Debug, Clone, AsRef, Into, From)]
+pub struct SessionAuthentication {
+    #[as_ref]
+    #[into]
+    pub user: User,
+    #[as_ref]
+    #[into]
+    pub session: Session,
+}
+impl SessionAuthentication {
+    pub async fn new(
+        session: Session,
+        database_connection: Data<DatabaseConnection>,
+    ) -> Result<Self, AuthenticationError> {
+        let user = User::get_by_id(database_connection.as_ref(), session.user_id)
+            .await?
+            .ok_or_else(|| {
+                warn!(
+                    "Session {} has invalid user id {}",
+                    session.session_id, session.user_id
+                );
+                AuthenticationError::InvalidSession
+            })?;
+        Ok(Self { user, session })
+    }
+}
+impl FromRequest for SessionAuthentication {
+    type Error = AuthenticationError;
+    type Future = LocalBoxFuture<'static, Result<Self, Self::Error>>;
+
+    /// Extracts the authentication data from the request.
+    #[instrument(skip(req))]
+    fn from_request(req: &HttpRequest, _: &mut Payload) -> Self::Future {
+        let raw_auth = req.extensions_mut().get::<AuthenticationRaw>().cloned();
+        let Some(raw_auth) = raw_auth else {
+            return Box::pin(async move { Err(AuthenticationError::NoAuthenticationProvided) });
+        };
+        let AuthenticationRaw::Session(session) = raw_auth else {
+            return Box::pin(async move { Err(AuthenticationError::MustBeSession) });
+        };
+        let database = req
+            .app_data::<Data<DatabaseConnection>>()
+            .expect("Unable to get Database Ref")
+            .clone();
+        return Box::pin(async move { SessionAuthentication::new(session, database).await });
     }
 }

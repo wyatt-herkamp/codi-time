@@ -6,7 +6,7 @@ use utoipa::ToSchema;
 
 use super::{
     bio::Bio, group::Group, preferences::Preferences, report_intervals::ReportIntervals, Email,
-    Username,
+    Location, Username,
 };
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize, ToSchema, Digestible)]
 #[cfg_attr(feature = "sea-orm", derive(sea_orm::FromQueryResult))]
@@ -23,7 +23,7 @@ pub struct User {
     pub require_password_change: bool,
     #[digestible(digest_with = digest_with_hash)]
     pub password_changed_at: DateTime<FixedOffset>,
-    pub location: Option<String>,
+    pub location: Location,
     pub show_on_leader_board: bool,
     pub report_interval: Vec<ReportIntervals>,
     pub preferences: Preferences,
@@ -45,6 +45,8 @@ pub struct PublicUser {
     pub show_on_leader_board: bool,
     pub preferences: Preferences,
     pub banned: bool,
+    #[sea_orm(skip)]
+    pub is_connected_to_github: bool,
     #[digestible(digest_with = digest_with_hash)]
     pub last_logged_in: DateTime<FixedOffset>,
     #[digestible(digest_with = digest_with_hash)]

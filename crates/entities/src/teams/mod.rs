@@ -1,13 +1,21 @@
 pub mod team_members;
+use common::database_helpers::{BasicTableTrait, HasNameColumn};
+use helper_macros::DatabaseHelpers;
 use sea_orm::entity::prelude::*;
-
-#[derive(Clone, Debug, PartialEq, Eq, DeriveEntityModel)]
+mod utils;
+#[derive(Clone, Debug, PartialEq, Eq, DeriveEntityModel, DatabaseHelpers)]
 #[sea_orm(table_name = "teams")]
 pub struct Model {
     #[sea_orm(primary_key, auto_increment = true)]
+    #[column(id)]
     pub id: i64,
+    /// Example: "Codi Time Developers"
     pub name: String,
+    /// Example: "codi-time-developers"
+    #[column(name)]
+    pub id_style_name: String,
     #[sea_orm(default_expr = "Expr::current_timestamp()")]
+    #[column(created)]
     pub created: DateTimeWithTimeZone,
 }
 

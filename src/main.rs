@@ -4,8 +4,9 @@ pub mod open_api;
 pub mod state;
 pub mod tracing_setup;
 pub mod utils;
+use std::sync::atomic::AtomicBool;
 pub use std::{fs::File, io::BufReader, path::PathBuf, sync::Arc};
-use std::{net::SocketAddr, sync::atomic::AtomicBool};
+pub mod projects;
 pub mod recaptcha;
 pub mod user;
 pub mod waka_time;
@@ -19,8 +20,9 @@ use open_api::ApiDoc;
 use recaptcha::RecaptchaAccess;
 use rustls::{Certificate, PrivateKey, ServerConfig as RustlsServerConfig};
 use rustls_pemfile::{certs, pkcs8_private_keys};
-use sea_orm::{ConnectOptions, SqlxPostgresConnector};
+use sea_orm::Database;
 pub mod cli_access;
+use human_panic::setup_panic;
 use state::State;
 use tracing_actix_web::TracingLogger;
 use user::{
@@ -40,6 +42,8 @@ struct Args {
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
+    setup_panic!();
+
     let args: Args = Args::parse();
     let ServerConfig {
         bind_address,
@@ -73,10 +77,9 @@ async fn main() -> std::io::Result<()> {
         manager,
         session_config,
     } = session;
-    let database =
-        SqlxPostgresConnector::connect(<config::Database as Into<ConnectOptions>>::into(database))
-            .await
-            .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
+    let database = Database::connect(database)
+        .await
+        .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
 
     Migrator::up(&database, None)
         .await
@@ -137,6 +140,8 @@ async fn main() -> std::io::Result<()> {
                     })
                     .configure(user::routes::init)
                     .configure(user::update_routes::init)
+                    .configure(user::cli::init)
+                    .configure(projects::init)
                     .service(Scope::new("/admin")),
             )
     });

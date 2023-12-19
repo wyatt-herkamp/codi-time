@@ -1,8 +1,7 @@
 use actix_web::{
     cookie::CookieBuilder, get, http::StatusCode, post, web, web::Data, HttpResponse, Responder,
 };
-use common::{Email, Group, PublicUser, User, Username};
-use either::Either;
+use common::{user_types::Location, Email, Group, IdOrName, PublicUser, User, Username};
 use entities::users::{
     does_email_exist, does_username_exist, UserActiveModel, UserModel, UserType,
 };
@@ -52,12 +51,10 @@ pub async fn me(auth: Authentication) -> impl Responder {
 #[get("/user/{id}")]
 pub async fn get_user(
     database: Data<DatabaseConnection>,
-    user_id: web::Path<Either<i64, String>>,
+    user_id: web::Path<IdOrName>,
 ) -> Result<HttpResponse, WebsiteError> {
-    let user = match user_id.into_inner() {
-        Either::Left(id) => PublicUser::get_by_id(database.as_ref(), id).await?,
-        Either::Right(username) => PublicUser::get_by_username(database.as_ref(), username).await?,
-    };
+    let user =
+        PublicUser::get_user_by_username_or_id(user_id.into_inner(), database.as_ref()).await?;
     if let Some(user) = user {
         Ok(HttpResponse::Ok().json(user))
     } else {
@@ -129,7 +126,7 @@ pub struct RegisterRequest {
     pub username: Username,
     pub email: Email,
     pub password: String,
-    pub location: Option<String>,
+    pub location: Option<Location>,
     #[serde(rename = "g-recaptcha-response")]
     pub recaptcha: Option<String>,
 }
@@ -137,12 +134,13 @@ pub struct RegisterRequest {
 impl RegisterRequest {
     pub fn new_user(self) -> Result<UserActiveModel, WebsiteError> {
         let password = password::encrypt_password(&self.password)?;
+        let location = self.location.unwrap_or_default();
         let result = UserActiveModel {
             name: ActiveValue::Set(self.name),
             username: ActiveValue::Set(self.username),
             email: ActiveValue::Set(self.email),
             password: ActiveValue::Set(password),
-            location: ActiveValue::Set(self.location),
+            location: ActiveValue::Set(location),
             ..Default::default()
         };
         Ok(result)

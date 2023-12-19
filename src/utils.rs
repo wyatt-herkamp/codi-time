@@ -82,6 +82,7 @@ pub mod password {
         }
     }
 }
+
 pub mod time_utils {
     pub fn get_current_time() -> chrono::DateTime<chrono::FixedOffset> {
         chrono::Utc::now().into()
@@ -90,14 +91,16 @@ pub mod time_utils {
 pub mod token {
     use rand::{distributions::Distribution, rngs::StdRng, SeedableRng};
 
-    pub fn generate_token() -> String {
+    /// Generate a random token and its hash
+    pub fn generate_token() -> (String, String) {
         let mut rng = StdRng::from_entropy();
         let token: String = rand::distributions::Alphanumeric
             .sample_iter(&mut rng)
             .take(32)
             .map(char::from)
             .collect();
-        token
+        let token_hash = super::sha256::encode_to_string(&token);
+        (token, token_hash)
     }
 }
 #[derive(Serialize)]

@@ -1,24 +1,30 @@
 pub mod pub_user;
 
 mod utils;
-use common::user_types::{
-    bio::Bio, group::Group, preferences::Preferences, report_intervals::ReportIntervals, Email,
-    Username,
+use common::{
+    database_helpers::{BasicTableTrait, HasNameColumn},
+    user_types::{
+        bio::Bio, group::Group, preferences::Preferences, report_intervals::ReportIntervals, Email,
+        Location, Username,
+    },
 };
+use helper_macros::DatabaseHelpers;
 use sea_orm::entity::prelude::*;
 use sea_orm_exports::SeaORMExports;
 use serde::Serialize;
 use strum::EnumIter;
 pub use utils::*;
 
-#[derive(Clone, Debug, PartialEq, DeriveEntityModel, Serialize, SeaORMExports)]
+#[derive(Clone, Debug, PartialEq, DeriveEntityModel, Serialize, SeaORMExports, DatabaseHelpers)]
 #[exports(User, has_relation)]
 #[sea_orm(table_name = "users")]
 pub struct Model {
     #[sea_orm(primary_key, auto_increment = true)]
+    #[column(id)]
     pub id: i64,
     #[sea_orm(default_value = "")]
     pub name: String,
+    #[column(name)]
     pub username: Username,
     #[sea_orm(default_expr = "Bio::default()")]
     pub bio: Bio,
@@ -31,7 +37,8 @@ pub struct Model {
     pub require_password_change: bool,
     #[sea_orm(default_expr = "Expr::current_timestamp()")]
     pub password_changed_at: DateTimeWithTimeZone,
-    pub location: Option<String>,
+    #[sea_orm(default_value = "Etc/UTC")]
+    pub location: Location,
     #[sea_orm(default_value = "true")]
     pub show_on_leader_board: bool,
     #[sea_orm(default_value = "{}")]
@@ -43,6 +50,7 @@ pub struct Model {
     #[sea_orm(default_expr = "Expr::current_timestamp()")]
     pub last_logged_in: DateTimeWithTimeZone,
     #[sea_orm(default_expr = "Expr::current_timestamp()")]
+    #[column(created)]
     pub created: DateTimeWithTimeZone,
 }
 impl ActiveModelBehavior for ActiveModel {}

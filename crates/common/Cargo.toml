@@ -6,6 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+either.workspace = true
 sea-orm = { workspace = true, optional = true }
 actix-web = { workspace = true, optional = true }
 serde = { workspace = true }
@@ -20,5 +21,6 @@ chrono = { workspace = true }
 strum = { workspace = true }
 auto_impl = "1.1.0"
 digestible = { workspace = true }
+tzdb.workspace = true
 utoipa = { workspace = true, features = [] }
 typeshare = { workspace = true }

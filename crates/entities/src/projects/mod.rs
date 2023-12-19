@@ -1,13 +1,20 @@
-use common::version_control_ref::VersionControlRef;
+use common::{
+    database_helpers::{BasicTableTrait, HasNameColumn},
+    version_control_ref::VersionControlRef,
+};
+use helper_macros::DatabaseHelpers;
 use sea_orm::entity::prelude::*;
-
-#[derive(Clone, Debug, PartialEq, DeriveEntityModel)]
+mod utils;
+pub use utils::*;
+#[derive(Clone, Debug, PartialEq, DeriveEntityModel, DatabaseHelpers)]
 #[sea_orm(table_name = "projects")]
 pub struct Model {
     #[sea_orm(primary_key)]
+    #[column(id)]
     pub id: i64,
     pub user_id: Option<i64>,
     pub team_id: Option<i64>,
+    #[column(name)]
     pub name: String,
     /// Other Names for the Project
     #[sea_orm(default_value = "{}")]
@@ -22,9 +29,9 @@ pub struct Model {
     #[sea_orm(default_expr = "Expr::current_timestamp()")]
     pub last_update: DateTimeWithTimeZone,
     #[sea_orm(default_expr = "Expr::current_timestamp()")]
-    pub created_at: DateTimeWithTimeZone,
+    #[column(created)]
+    pub created: DateTimeWithTimeZone,
 }
-
 impl ActiveModelBehavior for ActiveModel {}
 
 // Foreign Key account to account::id

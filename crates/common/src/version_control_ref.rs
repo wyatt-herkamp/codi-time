@@ -1,13 +1,14 @@
 use serde::{Deserialize, Serialize};
 use strum::{Display, EnumString};
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+use utoipa::ToSchema;
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, ToSchema)]
 #[cfg_attr(feature = "sea-orm", derive(sea_orm::FromJsonQueryResult))]
 #[serde(tag = "type", content = "value")]
 pub enum VersionControlRef {
     Github(GithubVersionControlRef),
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, ToSchema)]
 #[serde(tag = "type", content = "value")]
 pub enum GithubVersionControlRef {
     Normal {
@@ -23,7 +24,18 @@ pub enum GithubVersionControlRef {
     },
 }
 #[derive(
-    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Display, EnumString, Serialize, Deserialize,
+    Debug,
+    Clone,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Hash,
+    Display,
+    EnumString,
+    Serialize,
+    Deserialize,
+    ToSchema,
 )]
 pub enum PRStatus {
     Open,
@@ -31,7 +43,7 @@ pub enum PRStatus {
     Merged,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, ToSchema)]
 pub struct PullRequest {
     pub id: u64,
     pub status: PRStatus,

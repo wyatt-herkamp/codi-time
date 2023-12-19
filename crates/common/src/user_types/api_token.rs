@@ -4,7 +4,6 @@ use sea_orm::entity::prelude::*;
 use serde::{Deserialize, Serialize};
 use strum::{Display, EnumString};
 use utoipa::ToSchema;
-
 /// Permissions/Scopes for API Keys
 #[derive(
     Debug,
@@ -60,8 +59,6 @@ pub struct APIToken {
     pub id: i64,
     /// Has One relation to users::id
     pub user_id: i64,
-    /// API Key
-    pub token: String,
     pub permissions: Vec<APITokenPermissions>,
     pub from_cli: Option<FromCLI>,
     /// Key is invalid. Invalid keys are kept for a short period for warning and logging purposes.

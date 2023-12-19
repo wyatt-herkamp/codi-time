@@ -1,8 +1,26 @@
-use common::{user_types::group::Group, Email, PublicUser, User, Username};
+use common::{user_types::group::Group, Email, IdOrName, PublicUser, User, Username};
 use sea_orm::{
     entity::prelude::*, sea_query::SimpleExpr, ActiveValue, IntoActiveModel, QuerySelect,
 };
 
+pub async fn id_or_name_to_id(
+    id_or_name: IdOrName,
+    database: &impl ConnectionTrait,
+) -> Result<Option<i64>, DbErr> {
+    match id_or_name {
+        IdOrName::Id(id) => Ok(Some(id)),
+        IdOrName::Name(name) => {
+            let user = UserEntity::find()
+                .filter(UserColumn::Username.eq(name))
+                .select_only()
+                .column(UserColumn::Id)
+                .into_tuple()
+                .one(database)
+                .await?;
+            Ok(user)
+        }
+    }
+}
 use super::UserModel;
 use crate::{UserColumn, UserEntity};
 pub async fn does_email_exist(
@@ -151,6 +169,18 @@ pub trait UserType {
             Self::get_user(database, UserColumn::Email.eq(username)).await
         } else {
             Self::get_user(database, UserColumn::Email.eq(username)).await
+        }
+    }
+    async fn get_user_by_username_or_id(
+        username: IdOrName,
+        database: &impl ConnectionTrait,
+    ) -> Result<Option<Self>, DbErr>
+    where
+        Self: Sized,
+    {
+        match username {
+            IdOrName::Id(id) => Self::get_by_id(database, id).await,
+            IdOrName::Name(name) => Self::get_by_username(database, name).await,
         }
     }
 }

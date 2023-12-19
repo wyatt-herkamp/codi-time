@@ -1,7 +1,8 @@
-use common::{APITokenPermissions, user_types::api_token::FromCLI};
+use common::{user_types::api_token::FromCLI, APITokenPermissions};
 use sea_orm::entity::prelude::*;
-pub mod utils;
+mod utils;
 use sea_orm_exports::SeaORMExports;
+pub use utils::*;
 
 #[derive(Clone, Debug, PartialEq, Eq, DeriveEntityModel, SeaORMExports)]
 #[sea_orm(table_name = "api_keys")]
@@ -11,6 +12,9 @@ pub struct Model {
     pub id: i64,
     /// Has One relation to users::id
     pub user_id: i64,
+    pub name: String,
+    #[sea_orm(default_value = "")]
+    pub description: String,
     /// API Key
     pub token: String,
     pub permissions: Vec<APITokenPermissions>,

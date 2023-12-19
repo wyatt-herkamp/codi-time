@@ -1,10 +1,7 @@
 //! Routes to Build Compatibility with the WakaTime API
 //!  In the Future, We will have our own API, but for now, we will use the WakaTime API
 
-use actix_web::{
-    cookie::CookieBuilder, get, http::StatusCode, post, web, web::Data, HttpRequest, HttpResponse,
-    Responder,
-};
+use actix_web::{post, web, HttpRequest, HttpResponse};
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
@@ -22,6 +19,6 @@ pub struct WakaTimeHeartbeat {
     pub language: String,
 }
 #[post("/api/waka-time/heartbeat")]
-pub async fn heartbeat(auth: Authentication, request: HttpRequest) -> HttpResponse {
+pub async fn heartbeat(_auth: Authentication, _request: HttpRequest) -> HttpResponse {
     todo!()
 }
